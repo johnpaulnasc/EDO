@@ -1,49 +1,53 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
-def runge_kutta_4th_order_single(f, a, b, m, y0):
+def runge_kutta_4(f, a, b, y0, m):
+    """
+    Implementação do método de Runge-Kutta de 4ª ordem para uma EDO.
+    
+    :param f: Função que representa a EDO dy/dx = f(x, y)
+    :param a: Limite inferior do intervalo
+    :param b: Limite superior do intervalo
+    :param y0: Valor inicial y(a)
+    :param m: Número de subintervalos
+    :return: Vetores com as abscissas (x) e as soluções (y)
+    """
     h = (b - a) / m
-    x = a
-    y = y0
+    x = np.linspace(a, b, m+1)
+    y = np.zeros(m+1)
+    y[0] = y0
     
-    VetX = np.zeros(m + 1)
-    VetY = np.zeros(m + 1)
+    for i in range(m):
+        k1 = h * f(x[i], y[i])
+        k2 = h * f(x[i] + h / 2, y[i] + k1 / 2)
+        k3 = h * f(x[i] + h / 2, y[i] + k2 / 2)
+        k4 = h * f(x[i] + h, y[i] + k3)
+        y[i+1] = y[i] + (k1 + 2*k2 + 2*k3 + k4) / 6
     
-    VetX[0] = x
-    VetY[0] = y
-    
-    for i in range(1, m + 1):
-        k1 = f(x, y)
-        k2 = f(x + h / 2, y + h / 2 * k1)
-        k3 = f(x + h / 2, y + h / 2 * k2)
-        k4 = f(x + h, y + h * k3)
-        
-        x = x + h
-        y = y + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-        
-        VetX[i] = x
-        VetY[i] = y
-    
-    return VetX, VetY
+    return x, y
 
-# Função definida pela EDO y' = y - x^2 + 1
+# Exemplo de uso
 def f(x, y):
-    return y - x**2 + 1
+    return x - 2*y + 1
 
-# Parâmetros
-a = 0       # Limite inferior
-b = 1       # Limite superior
-m = 10      # Número de subintervalos
-y0 = 1    # Valor inicial y(a) = 0.5
+a = 0
+b = 1
+y0 = 1
+m = 10
 
-# Resolvendo a EDO
-VetX, VetY = runge_kutta_4th_order_single(f, a, b, m, y0)
+x, y = runge_kutta_4(f, a, b, y0, m)
 
-# Plotando o resultado
-plt.plot(VetX, VetY, label='Runge-Kutta de 4ª ordem')
+# Imprimindo a tabela de resultados
+data = {'x': x, 'y': y}
+df = pd.DataFrame(data)
+print(df)
+
+# Gráfico
+plt.plot(x, y, label='Aproximação Runge-Kutta')
 plt.xlabel('x')
 plt.ylabel('y')
-plt.title('Solução da EDO usando Runge-Kutta de 4ª ordem')
+plt.title('Método de Runge-Kutta de 4ª Ordem para uma EDO')
 plt.legend()
 plt.grid(True)
 plt.show()

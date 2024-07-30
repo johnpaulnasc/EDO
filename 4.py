@@ -1,66 +1,63 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
-def runge_kutta_4th_order_system(f, g, a, b, m, y0, z0):
+def runge_kutta_4_system(f, g, a, b, y0, z0, m):
+    """
+    Implementação do método de Runge-Kutta de 4ª ordem para um sistema de duas EDOs.
+    
+    :param f: Função que representa a primeira EDO dy/dx = f(x, y, z)
+    :param g: Função que representa a segunda EDO dz/dx = g(x, y, z)
+    :param a: Limite inferior do intervalo
+    :param b: Limite superior do intervalo
+    :param y0: Valor inicial y(a)
+    :param z0: Valor inicial z(a)
+    :param m: Número de subintervalos
+    :return: Vetores com as abscissas (x) e as soluções (y, z)
+    """
     h = (b - a) / m
-    x = a
-    y = y0
-    z = z0
+    x = np.linspace(a, b, m+1)
+    y = np.zeros(m+1)
+    z = np.zeros(m+1)
+    y[0] = y0
+    z[0] = z0
     
-    VetX = np.zeros(m + 1)
-    VetY = np.zeros(m + 1)
-    VetZ = np.zeros(m + 1)
+    for i in range(m):
+        k1_y = h * f(x[i], y[i], z[i])
+        k1_z = h * g(x[i], y[i], z[i])
+        k2_y = h * f(x[i] + h / 2, y[i] + k1_y / 2, z[i] + k1_z / 2)
+        k2_z = h * g(x[i] + h / 2, y[i] + k1_y / 2, z[i] + k1_z / 2)
+        k3_y = h * f(x[i] + h / 2, y[i] + k2_y / 2, z[i] + k2_z / 2)
+        k3_z = h * g(x[i] + h / 2, y[i] + k2_y / 2, z[i] + k2_z / 2)
+        k4_y = h * f(x[i] + h, y[i] + k3_y, z[i] + k3_z)
+        k4_z = h * g(x[i] + h, y[i] + k3_y, z[i] + k3_z)
+        y[i+1] = y[i] + (k1_y + 2*k2_y + 2*k3_y + k4_y) / 6
+        z[i+1] = z[i] + (k1_z + 2*k2_z + 2*k3_z + k4_z) / 6
     
-    VetX[0] = x
-    VetY[0] = y
-    VetZ[0] = z
-    
-    for i in range(1, m + 1):
-        k1_y = f(x, y, z)
-        k1_z = g(x, y, z)
-        
-        k2_y = f(x + h / 2, y + h / 2 * k1_y, z + h / 2 * k1_z)
-        k2_z = g(x + h / 2, y + h / 2 * k1_y, z + h / 2 * k1_z)
-        
-        k3_y = f(x + h / 2, y + h / 2 * k2_y, z + h / 2 * k2_z)
-        k3_z = g(x + h / 2, y + h / 2 * k2_y, z + h / 2 * k2_z)
-        
-        k4_y = f(x + h, y + h * k3_y, z + h * k3_z)
-        k4_z = g(x + h, y + h * k3_y, z + h * k3_z)
-        
-        x = x + h
-        y = y + h / 6 * (k1_y + 2 * k2_y + 2 * k3_y + k4_y)
-        z = z + h / 6 * (k1_z + 2 * k2_z + 2 * k3_z + k4_z)
-        
-        VetX[i] = x
-        VetY[i] = y
-        VetZ[i] = z
-    
-    return VetX, VetY, VetZ
+    return x, y, z
 
-# Funções definidas pelas EDOs y' = y - x^2 + 1 e z' = z + y + x
+# Exemplo de uso
 def f(x, y, z):
-    return y - x**2 + 1
+    return -2 * y + z
 
 def g(x, y, z):
-    return z + y + x
+    return -y + 3 * z
 
-# Parâmetros
-a = 0       # Limite inferior
-b = 2       # Limite superior
-m = 20      # Número de subintervalos
-y0 = 0.5    # Valor inicial y(a) = 0.5
-z0 = 0.0    # Valor inicial z(a) = 0.0
+a = 0
+b = 1
+y0 = 1
+z0 = 1
+m = 10
 
-# Resolvendo o sistema de EDOs
-VetX, VetY, VetZ = runge_kutta_4th_order_system(f, g, a, b, m, y0, z0)
+x, y, z = runge_kutta_4_system(f, g, a, b, y0, z0, m)
 
-# Plotando os resultados
-plt.plot(VetX, VetY, label='y(x) - Runge-Kutta de 4ª ordem')
-plt.plot(VetX, VetZ, label='z(x) - Runge-Kutta de 4ª ordem')
+# Imprimindo a tabela de resultados
+data = {'x': x, 'y': y, 'z': z}
+df = pd.DataFrame(data)
+print(df)
+
+# Gráfico
+plt.plot(x, y, label='y (solução 1)')
+plt.plot(x, z, label='z (solução 2)')
 plt.xlabel('x')
-plt.ylabel('y, z')
-plt.title('Solução do sistema de EDOs usando Runge-Kutta de 4ª ordem')
+plt.ylabel('Soluções')
+plt.title('Método de Runge-Kutta de 4ª Ordem para um sistema de duas EDOs')
 plt.legend()
 plt.grid(True)
 plt.show()
